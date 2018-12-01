@@ -3,11 +3,14 @@ document.getElementById("myForm").addEventListener("submit", saveContact);
 
 // SAVE CONTACT FUNCTION
 function saveContact(e) {
+  //PREVENT FORM FROM SUBMITTING
+  e.preventDefault();
   // GET THE FORM VALUES FROM THE DOM AND SET THEM TO A VARIABLE
   var contactName = document.getElementById("name").value;
   var contactEmail = document.getElementById("email").value;
   var contactPhone = document.getElementById("phone").value;
   var contactAddress = document.getElementById("address").value;
+  var id = new Date().getTime();
 
   if (!validateForm(contactName, contactEmail, contactAddress)) {
     return false;
@@ -18,7 +21,8 @@ function saveContact(e) {
     name: contactName,
     email: contactEmail,
     phone: contactPhone,
-    address: contactAddress
+    address: contactAddress,
+    id: id
   };
 
   // TEST IF LOCAL STORAGE STATUS
@@ -34,29 +38,28 @@ function saveContact(e) {
     var contacts = JSON.parse(localStorage.getItem("contacts"));
 
     //ADD CONTACT from the contact object submitted to the local storage, adding it to the contacts that are already there
-    console.log(contact.id);
     contacts.push(contact);
 
     //Re-SET TO LOCAL STORAGE (set to string)
     localStorage.setItem("contacts", JSON.stringify(contacts));
   }
+  //reset form inputs
+  document.querySelector("form").reset();
+
   //REFETCH CONTACTS
   fetchContacts();
-
-  // console.log(contacts);
-  //PREVENT FORM FROM SUBMITTING
-  e.preventDefault();
 }
 
-function deleteContact(email) {
+function deleteContact(id) {
   //GET CONTACTS FROM LOCAL STORAGE
   var contacts = JSON.parse(localStorage.getItem("contacts"));
 
   //LOOP THRU CONTACTS
   for (var i = 0; i < contacts.length; i++) {
-    if (contacts[i].email == email) {
+    if (contacts[i].id == id) {
+      let index = contacts.indexOf(contacts[i]);
       // REMOVE FROM ARRAY OF CONTACTS IN THE STORAGE
-      contacts.splice(i, 1);
+      contacts.splice(index, 1);
     }
   }
   //Re-SET TO LOCAL STORAGE (set to string)
@@ -67,6 +70,7 @@ function deleteContact(email) {
 //FETCH CONTACTS
 //fect contacts on window load
 window.onload = fetchContacts();
+
 function fetchContacts() {
   //GET CONTACTS FROM LOCAL STORAGE
   var contacts = JSON.parse(localStorage.getItem("contacts"));
@@ -81,15 +85,16 @@ function fetchContacts() {
     var email = contacts[i].email;
     var phone = contacts[i].phone;
     var address = contacts[i].address;
+    var id = contacts[i].id;
 
-    contactsResult.innerHTML += `<div class="card my-2 p-3">
-                        <h4>${name}
-                        <a onclick = "deleteContact('${email}')" target = "_blank" class="btn badge badge-danger ml-5">Delete </a><a class="btn badge badge-primary ml-2">Edit </a></h4>
-                        <p class="lead">${email}</p>
-                        <p class="lead">${phone} </p>
-                        <p class="lead">${address}</p>
-                        
-                    </div>`;
+    contactsResult.innerHTML += `
+    <div id = "${id}" class="card my-2 p-3">
+      <h4>${name}
+       <a onclick = "deleteContact('${id}')" target = "_blank" class="btn badge badge-danger ml-5">Delete </a><a class="btn badge badge-primary ml-2">Edit </a></h4>
+       <p class="lead">${email}</p>
+       <p class="lead">${phone} </p>
+       <p class="lead">${address}</p>
+  </div>`;
   }
 }
 
